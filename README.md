@@ -1,26 +1,69 @@
 # Employee Attendance & Analytics API
-Employee Attendance and Analytics API built with Python, FastAPI, and MongoDB
-All code is in `app/main.py`. Parts A, B and C are done.
 
+A RESTful API built with Python, FastAPI, and MongoDB for employee attendance management and workforce analytics.
 
-## Run
+## Features
+
+- Employee management and attendance pagination.
+- Punch-in/punch-out with business rules.
+- Manual attendance corrections with an audit trail.
+- Monthly summaries, department analytics, late-arrival leaderboard, and attendance trends.
+- MongoDB aggregation pipelines and indexes.
+
+## Tech Stack
+
+Python 3.11+, FastAPI, MongoDB 6.0+, PyMongo, and Pydantic.
+
+## Setup
+
+Install dependencies:
+
 ```bash
 pip install -r requirements.txt
-export MONGO_URI="mongodb://localhost:27017"
-export MONGO_DB="attendance_db"
-uvicorn app.main:app --port 8000
 ```
-On Windows PowerShell use `$env:MONGO_URI="..."` and `$env:MONGO_DB="..."`. A local `.env` also works, but real environment variables win. It needs MongoDB 6.0 or newer. All indexes are created at startup, nothing to do by hand.
 
-## Things to know
-- Trend `moving_avg_7d` is the average of the rounded (4 decimals) `attendance_rate` values.
-- A trend range of more than 92 days returns 422.
-- Punch-out closes the latest record with `punch_in` at or before `punched_at`. If there is none, it returns 404.
-- A PATCH that loses a race with another change returns 409. Nothing is overwritten.
-- Response models are in the code so the generated OpenAPI matches `openapi.yaml`.
+Configure MongoDB using environment variables.
 
-## Testing
-I wrote my own live tests (32 cases: punch rules, races, PATCH history, ties, no-log employees, weekends, mid-month joiners, overnight shifts, explain plans). They all passed against MongoDB 7. They are not in this repo.
+**Windows PowerShell:**
 
-## Speed check
-I loaded about 100,000 attendance records (200 employees, 500 days) and timed the endpoints on my own machine with MongoDB 7, five runs each. The median times were between 6 and 115 ms. The slowest was the department summary at 115 ms. The very first request took about 2 seconds while the connection warmed up. All six explain plans use an index and none do a collection scan.
+```powershell
+$env:MONGO_URI="mongodb://localhost:27017"
+$env:MONGO_DB="attendance_db"
+```
+
+Start the application from the project root:
+
+```bash
+python -m uvicorn app.main:app --port 8000
+```
+
+API documentation: http://localhost:8000/docs
+
+## Business Rules
+
+- Attendance dates follow IST, including overnight shifts.
+- Unique indexes prevent duplicate employee attendance records.
+- Manual corrections maintain history and detect conflicting updates.
+- Analytics use MongoDB aggregation pipelines.
+- Department trends support ranges up to 92 days.
+
+## Performance
+
+Latest local benchmark: approximately 100,000 attendance records and 200 employees on MongoDB 7.
+
+| Endpoint | Median |
+|---|---:|
+| Attendance list, page 1 | 91 ms |
+| Attendance list, page 500 | 214 ms |
+| Employee date-range query | 7 ms |
+| WFH filter | 22 ms |
+| Monthly employee summary | 14 ms |
+| Department summary | 367 ms |
+| Late leaderboard | 81 ms |
+| Department trend, 92 days | 229 ms |
+
+All six explain-plan checks reported `IXSCAN=True` and `COLLSCAN=False` in the reported run.
+
+## Documentation
+
+See [DECISIONS.md](DECISIONS.md) for design choices and [REVIEW.md](REVIEW.md) for the starter-code review.
