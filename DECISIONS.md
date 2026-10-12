@@ -1,4 +1,4 @@
-# DECISIONS.md  (about 150-200 words in total - plain language, your own words)
+# DECISIONS.md  
 1. **Indexes.** `employees`: unique `emp_code` (no duplicates), `(department, emp_code)` for the list, `joined_on` for headcount. `attendance_logs`: unique `(emp_code, date)` for the punch-in race and monthly queries, `(date desc, emp_code)` for list order and the leaderboard, `(status, date desc, emp_code)` for the status filter, `(emp_code, punch_in desc)` for punch-out. I rejected an index on `late_minutes`: the month's date range already cuts the scan, and it would only slow writes.
 2. **Punch-in race.** Both requests just insert. The unique `(emp_code, date)` index lets MongoDB accept one. The other gets a duplicate key error and I return 409. I never check first.
 3. **Ties.** I rank first with `$rank` (1, 2, 2, 4), then keep `rank <= limit`. Everyone tied at the cutoff is returned, so there can be more rows than the limit.
