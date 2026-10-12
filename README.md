@@ -1,6 +1,6 @@
 # Employee Attendance & Analytics API
 Employee Attendance and Analytics API built with Python, FastAPI, and MongoDB
-FastAPI + MongoDB. All code is in `app/main.py`. Parts A, B and C are done.
+All code is in `app/main.py`. Parts A, B and C are done.
 
 
 ## Run
