@@ -1,5 +1,5 @@
 # REVIEW.md
-Defects I found in the starter `app/main.py` (helpers and endpoints). I fixed all of them.
+Defects I found in the starter `app/main.py` (helpers and endpoints). I fixed all of them. 
 
 | # | Where (function / line) | What is wrong | How you'd notice it (test, input, or symptom) | How you fixed it |
 |---|---|---|---|---|
